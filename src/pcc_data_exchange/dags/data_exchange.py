@@ -1,48 +1,61 @@
 import json
 from datetime import datetime
 
-from airflow.decorators import dag, task
+from airflow import DAG
+from airflow.operators.dummy import DummyOperator
+from airflow.operators.python import PythonOperator
+from airflow.sensors.weekday import DayOfWeekSensor
+from airflow.utils.task_group import TaskGroup
 
-@dag(schedule_interval=None, start_date=datetime(2021, 12, 13), catchup=False, tags = ['library-of-congress', 'oclc', 'share-vde', 'sinopia'])
-def data_exchange_taskflow_dag():
+hubs = ['oclc', 'loc', 'sharevde']
+
+with DAG(
+    "data_exchange_demo",
+    default_args={
+        "owner": "airflow",
+
+    },
+    description="PCC Data Exchange Demo",
+    start_date=datetime(2021, 12, 13),
+    schedule_interval=None,
+    tags = ['library-of-congress', 'oclc', 'share-vde', 'sinopia'],
+) as dag:
     """
     ### PCC Data Exchange
     A simple data validation and exchange pipeline for initially BIBFRAME Instance Data
     """
-    @task()
-    def extract_bf_source():
-        """
-        #### Extracts BIBFRAME RDF from Source
-        """
-        return "complete"
 
-    @task()
-    def validate_bf(bf_instance: str):
-        """
-        #### Validates BIBFRAME RDF Instance
-        """
-        return True
+    weekly_download = DayOfWeekSensor(
+        task_id='weekly-delta-check',
+        week_day='Monday',
+        use_task_execution_day=True
+    )
 
-    @task()
-    def construct_payload(bf_instance: str):
-        """
-        #### Constructs Interchange Payload
-        """
-        payload = { "uri": bf_instance }
-        return payload
+    with TaskGroup(group_id="hub-sources-validate") as hub_sources_validate:
+        hubs_plus = hubs + ["sinopia"]
+        for hub in hubs_plus:
+            hub_extract_task = DummyOperator(
+                task_id=f"{hub}-rdf-extract"
+            )
+            validate_rdf_task = DummyOperator(
+                task_id=f"{hub}-rdf-validate"
+            )
+            hub_extract_task >> validate_rdf_task
+    
 
-    @task()
-    def send_payload(targets: list, payload: dict):
-        """
-        #### Sends Payloads to Hubs
-        """
-        for target in targets:
-            print(f"{target} with {payload}")
-        return True
+    construct_payload = DummyOperator(
+        task_id="construct-exchange-payload"
+    )
 
-    bibframe_source = extract_bf_source()
-    validate_bibframe = validate_bf(bibframe_source)
-    payload = construct_payload(validate_bibframe)
-    send_to_hubs = send_payload(['oclc','loc', 'share-vde'], payload)
+    with TaskGroup(group_id='send-payloads') as send_payloads:
+        for hub in hubs:
+            send_payload_task = DummyOperator(
+                task_id=f"{hub}-send-payload"
+            )
 
-pcc_data_exchange = data_exchange_taskflow_dag()
+weekly_download >> hub_sources_validate
+hub_sources_validate >> construct_payload >> send_payloads
+
+
+
+   
