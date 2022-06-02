@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+      <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+      <py-env>
+        - numpy
+        - matplotlib
+        - './static/wheels/rdflib-6.1.1-py3-none-any.whl'
+        - paths:
+          - ./data.py
+      </py-env>
+      <style>
+       body {
+         padding: .5em;
+       }
+       h1 {
+         font-size: 2em;
+       }
+
+       h2 {
+         font-size: 1.5em;
+       }
+      </style>
+    </head>
+
+  <body>
+    <h1>PCC Interchange Processing</h1>
+    <p>
+       <label id="today"></label>
+     </p>
+    <div id="plot"></div>
+    <py-script>
+      import sys
+      import datetime as dt
+      setattr(sys.stderr, 'isatty', lambda : True)
+
+      from data import graph
+
+      pyscript.write('today', dt.date.today().strftime('%A %B %d, %Y'))
+
+    </py-script>      
+    <py-box widths="1/2;1/2">
+        <py-repl id="my-repl" auto-generate="true" std-out="output" std-err="err-div"> </py-repl>
+        <div id="output" class="p-4"></div>
+      </py-box>
+      <footer id="err-div" class="bg-red-700 text-white text-center border-t-4 border-green-500 fixed inset-x-0 bottom-0 p-4 hidden">
+    </footer>
+  </body>
+</html>
