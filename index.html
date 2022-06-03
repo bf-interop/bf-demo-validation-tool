@@ -28,34 +28,44 @@
   <body>
     <h1>PCC Interchange Processing</h1>
     <p>
-       <label id="today"></label>
-     </p>
+       <label id="today"></label><label id="shacl_size"></label>     
+    </p>
     <div id="plot"></div>
     <py-script>
+      import json
       import sys
       import datetime as dt
+
       from pyodide.http import open_url
 
       # Hack to load rdflib
       setattr(sys.stderr, 'isatty', lambda : True)
 
-      from data import graph
+      from rdflib import Graph
+
+      from data import shacl_urls, shacl_graph
+
+      for url in shacl_urls:
+          result = open_url(url)
+          json_ld = json.loads(result.getvalue())['data']
+          graph = Graph()
+          graph.parse(data=json.dumps(json_ld), format='json-ld')
+          shacl_graph.parse(data=graph.serialize(format='nt'))
+
+
 
       pyscript.write('today', dt.date.today().strftime('%A %B %d, %Y'))
+      pyscript.write('shacl_size', f", {len(shacl_graph)} triples from {len(shacl_urls)} Sinopia SHACL Resources")
 
 
     </py-script>
-    <h2>Enter URL to Source RDF</h2>
-    <py-box widths="4/5;1/5">  
-      <py-inputbox id="rdf-url">
-
-      </py-inputbox>
-      <py-button id="get-rdf" label="Load RDF">
-       
-      </py-button>
-    </py-box>
-     <div id="load_rdf_result"></div>
-     <py-box widths="1/2;1/2">
+    <h2>Enter URL or upload Source RDF</h2>
+    <div>
+      <input id="rdf-url" class="border flex-1 mr-3 border-gray-300 p-2 rounded" type="text"></input>
+      <input type="file" id="upload-rdf"></input>
+      <button  class="border flex-1 mr-3 border-gray-300 p-2 rounded">Validate RDF</button>
+    </div>
+   <py-box widths="1/2;1/2">
         <py-repl id="my-repl" auto-generate="true" std-out="output" std-err="err-div"> </py-repl>
         <div id="output" class="p-4"></div>
     </py-box>
