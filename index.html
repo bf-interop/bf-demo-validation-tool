@@ -2,6 +2,9 @@
 <html>
     <head>
       <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+      <link href="static/css/main.css" rel="stylesheet" />
+      <link href="static/css/header.css" rel="stylesheet" />
+
       <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
       <py-env>
         - numpy
@@ -26,21 +29,26 @@
     </head>
 
   <body>
-    <h1>PCC Interchange Processing</h1>
-    <p>
-       <label id="today"></label><label id="shacl_size"></label>     
-    </p>
+    
+    <div class="editor-navbar">
+      <label id="today"></label>
+      <h1>PCC Interchange Processing</h1>
+      <label id="shacl_size" class="pull-right"></label>
+    </div>
     <div id="plot"></div>
     <py-script>
       import json
       import sys
       import datetime as dt
 
+
+
       from pyodide.http import open_url
 
       # Hack to load rdflib
       setattr(sys.stderr, 'isatty', lambda : True)
 
+      import pyshacl
       from rdflib import Graph
 
       from data import shacl_urls, shacl_graph
@@ -55,16 +63,45 @@
 
 
       pyscript.write('today', dt.date.today().strftime('%A %B %d, %Y'))
-      pyscript.write('shacl_size', f", {len(shacl_graph)} triples from {len(shacl_urls)} Sinopia SHACL Resources")
+      pyscript.write('shacl_size', f"{len(shacl_graph)} triples from {len(shacl_urls)} Sinopia SHACL Resources")
 
+
+      rdf_url = Element("rdf-url")
+      upload_control = Element("upload-rdf")
+
+      async def validate_rdf(*args, **kwargs):
+          incoming_graph = Graph()
+
+          if upload_control.element.files.length > 0:
+              rdf_file = upload_control.element.files.item(0)
+              rdf_file_text = await rdf_file.text()
+              incoming_graph.parse(data=rdf_file_text)
+          elif len(rdf_url.value):
+              result = open_url(rdf_url.value)
+              if "sinopia" in rdf_url.value:
+                  sinopia_json_ld = json.loads(result.getvalue())['data']
+                  incoming_graph.parse(data=json.dumps(sinopia_json_ld), format='json-ld')
+              else: # Try parsing the text
+                  raw_rdf = result.getvalue()
+                  incoming_graph.parse(data=raw_rdf)
+          if len(incoming_graph) > 0:
+              conforms, results_graph, results_text = pyshacl.validate(incoming_graph, shacl_graph=shacl_graph)
+              if conforms is True:
+                  pyscript.write('validation-result', f"Passed!\n{results_text}")
+              else:
+                  pyscript.write('validation-result', results_text)
+              print(incoming_graph.serialize(format='turtle'))
+              
+          
 
     </py-script>
     <h2>Enter URL or upload Source RDF</h2>
-    <div>
+    <py-box widths="2/5;2/5;1/5">
       <input id="rdf-url" class="border flex-1 mr-3 border-gray-300 p-2 rounded" type="text"></input>
       <input type="file" id="upload-rdf"></input>
-      <button  class="border flex-1 mr-3 border-gray-300 p-2 rounded">Validate RDF</button>
-    </div>
+      <button id="validate-rdf-btn" class="btn-primary" pys-onClick="validate_rdf">Validate RDF</button>
+    </py-box>
+    <div id="validation-result"></div>
    <py-box widths="1/2;1/2">
         <py-repl id="my-repl" auto-generate="true" std-out="output" std-err="err-div"> </py-repl>
         <div id="output" class="p-4"></div>
