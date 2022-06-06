@@ -8,3 +8,4 @@ shacl_graph = rdflib.Graph()
 shacl_graph.namespace_manager.bind("bf", "http://id.loc.gov/ontologies/bibframe/")
 shacl_graph.namespace_manager.bind("bflc", "http://id.loc.gov/ontologies/bflc/")
 shacl_graph.namespace_manager.bind("sinopia", "http://sinopia.io/vocabulary/")
+

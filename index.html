@@ -18,13 +18,6 @@
     </head>
 
   <body>
-    
-    <div class="editor-navbar">
-      <label id="today"></label>
-      <h1>PCC Interchange Processing</h1>
-      <label id="shacl_size" class="pull-right"></label>
-    </div>
-    <div id="plot"></div>
     <py-script>
       import json
       import sys
@@ -53,6 +46,35 @@
 
       pyscript.write('today', dt.date.today().strftime('%A %B %d, %Y'))
       pyscript.write('shacl_size', f"{len(shacl_graph)} triples from {len(shacl_urls)} Sinopia SHACL Resources")
+
+      shacl_summary = Element("shacl_summary")
+      shacl_summary_template = Element("summary-template").select(".summary", from_content=True)
+      shapes = []
+
+      def summarize(*args, **kwargs):
+          shacl_summary.clear()
+          current_shacl = kwargs.get("graph", shacl_graph)
+          for row in current_shacl.query("""SELECT ?node_shape ?label 
+          WHERE { ?node_shape a sh:NodeShape .
+                  ?node_shape rdfs:label ?label . }"""):
+              shape = {
+                "id": str(row[0]),
+                "label": str(row[1])
+              }
+              shapes.append(shape)
+              shape_html = shacl_summary_template.clone(shape["id"], to=shacl_summary)
+              shape_paragraph = shape_html.select("p")
+              shape_anchor = shape_paragraph.select("a")
+              shape_anchor.element.setAttribute("href", shape["id"])
+              shape_anchor.element.innerText = shape["label"]
+              shacl_summary.element.appendChild(shape_paragraph.element)
+      
+      summarize()
+
+
+
+
+
 
 
       rdf_url = Element("rdf-url")
@@ -84,6 +106,20 @@
           
 
     </py-script>
+    <div class="editor-navbar">
+      <label id="today"></label>
+      <h1>PCC Interchange Processing</h1>
+      <label id="shacl_size" class="pull-right"></label>
+    </div>
+    <h2>SHACL Summary</h2>
+    <template id="summary-template">
+      <section class="summary">
+        <p>
+          <a></a>
+        </p>
+      </section>
+    </template>
+    <div id="shacl_summary"></div>
     <h2>Enter URL or upload Source RDF</h2>
     <py-box widths="2/5;2/5;1/5">
       <input id="rdf-url" class="border flex-1 mr-3 border-gray-300 p-2 rounded" type="text"></input>
@@ -91,6 +127,7 @@
       <button id="validate-rdf-btn" class="btn-primary" pys-onClick="validate_rdf">Validate RDF</button>
     </py-box>
     <div id="validation-result"></div>
+    <h2>Python REPL</h2>
    <py-box widths="1/2;1/2">
         <py-repl id="my-repl" auto-generate="true" std-out="output" std-err="err-div"> </py-repl>
         <div id="output" class="p-4"></div>
