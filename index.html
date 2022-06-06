@@ -51,6 +51,7 @@
       shacl_summary_template = Element("summary-template").select(".summary", from_content=True)
       shapes = []
 
+
       def summarize(*args, **kwargs):
           shacl_summary.clear()
           current_shacl = kwargs.get("graph", shacl_graph)
@@ -67,14 +68,17 @@
               shape_anchor = shape_paragraph.select("a")
               shape_anchor.element.setAttribute("href", shape["id"])
               shape_anchor.element.innerText = shape["label"]
+              properties = []
+              for pred, obj in current_shacl.predicate_objects(subject=row[0]):
+                  properties.append((pred, obj))
+              _add_property_summary(properties, shape_paragraph)
               shacl_summary.element.appendChild(shape_paragraph.element)
       
+      def _add_property_summary(properties, paragraph):
+          unordered_list = paragraph.select("ul")
+          
+
       summarize()
-
-
-
-
-
 
 
       rdf_url = Element("rdf-url")
@@ -116,6 +120,7 @@
       <section class="summary">
         <p>
           <a></a>
+          <ul></ul>
         </p>
       </section>
     </template>
