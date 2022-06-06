@@ -57,7 +57,8 @@
           current_shacl = kwargs.get("graph", shacl_graph)
           for row in current_shacl.query("""SELECT ?node_shape ?label 
           WHERE { ?node_shape a sh:NodeShape .
-                  ?node_shape rdfs:label ?label . }"""):
+                  ?node_shape rdfs:label ?label . }
+          ORDER BY ?label """):
               shape = {
                 "id": str(row[0]),
                 "label": str(row[1])
