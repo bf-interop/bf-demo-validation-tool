@@ -7,6 +7,8 @@ shacl_urls = ['https://api.development.sinopia.io/resource/18b6edba-b829-47f8-9f
               'https://api.development.sinopia.io/resource/0733f929-011a-4865-8c80-ef69449f1a25',
               'https://api.development.sinopia.io/resource/137a8f9d-bee3-410d-b224-aa3712013662' ]
 
+SHACL = rdflib.Namespace("http://www.w3.org/ns/shacl#")
+
 shacl_graph = rdflib.Graph()
 shacl_graph.namespace_manager.bind("bf", "http://id.loc.gov/ontologies/bibframe/")
 shacl_graph.namespace_manager.bind("bflc", "http://id.loc.gov/ontologies/bflc/")

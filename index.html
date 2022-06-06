@@ -14,6 +14,7 @@
         - './static/wheels/pyshacl-0.19.0-py3-none-any.whl'
         - paths:
           - ./data.py
+          - ./utils.py
       </py-env>
     </head>
 
@@ -23,17 +24,19 @@
       import sys
       import datetime as dt
 
-
-
+      import js
       from pyodide.http import open_url
 
       # Hack to load rdflib
       setattr(sys.stderr, 'isatty', lambda : True)
 
       import pyshacl
-      from rdflib import Graph
+      from rdflib import Graph, Namespace
 
-      from data import shacl_urls, shacl_graph
+      
+
+      from data import SHACL, shacl_urls, shacl_graph
+      from utils import validation_html
 
       for url in shacl_urls:
           result = open_url(url)
@@ -49,35 +52,64 @@
 
       shacl_summary = Element("shacl_summary")
       shacl_summary_template = Element("summary-template").select(".summary", from_content=True)
-      shapes = []
+      shapes = {}
 
 
       def summarize(*args, **kwargs):
           shacl_summary.clear()
           current_shacl = kwargs.get("graph", shacl_graph)
-          for row in current_shacl.query("""SELECT ?node_shape ?label 
+          for row in current_shacl.query("""SELECT ?node_shape ?label ?target
           WHERE { ?node_shape a sh:NodeShape .
-                  ?node_shape rdfs:label ?label . }
+                  ?node_shape rdfs:label ?label . 
+                  ?node_shape sh:targetClass ?target .}
           ORDER BY ?label """):
-              shape = {
-                "id": str(row[0]),
-                "label": str(row[1])
-              }
-              shapes.append(shape)
-              shape_html = shacl_summary_template.clone(shape["id"], to=shacl_summary)
-              shape_paragraph = shape_html.select("p")
-              shape_anchor = shape_paragraph.select("a")
-              shape_anchor.element.setAttribute("href", shape["id"])
-              shape_anchor.element.innerText = shape["label"]
-              properties = []
-              for pred, obj in current_shacl.predicate_objects(subject=row[0]):
-                  properties.append((pred, obj))
-              _add_property_summary(properties, shape_paragraph)
-              shacl_summary.element.appendChild(shape_paragraph.element)
+              key = str(row[0])
+              if not key in shapes:
+                  shapes[key] = {
+                    "id": row[0],
+                    "label": str(row[1]),
+                    "targets": [row[2],],
+                  }
+                  continue
+              shapes[key]["targets"].append(row[2])
+          for key, shape in shapes.items():
+              shape_html = shacl_summary_template.clone(key, to=shacl_summary)
+              shape_tr = js.document.createElement("tr")
+              shape_td = js.document.createElement("td")
+              anchor = js.document.createElement("a")
+              anchor.setAttribute("href", shape["id"])
+              anchor.innerText = shape["label"]
+              shape_td.appendChild(anchor)
+              shape_tr.appendChild(shape_td)
+              target_td = js.document.createElement("td")
+              for target_class in shape["targets"]:
+                  target_p = js.document.createElement("p")
+                  target_p.innerText = target_class
+                  target_td.appendChild(target_p)
+              shape_tr.appendChild(target_td)
+              properties = {}
+              for obj in current_shacl.objects(subject=shape["id"],
+                                               predicate=SHACL.property):
+                path = current_shacl.value(subject=obj, predicate=SHACL.path)
+                path_key = str(path)
+                if not path_key in properties:
+                    properties[path_key] = [("path", str(path))]
+                min_count = current_shacl.value(subject=obj, predicate=SHACL.minCount)
+                if min_count:
+                    properties[path_key].append(("miniumum count", int(min_count)))
+              _add_property_summary(properties, shape_tr)
+              shacl_summary.element.appendChild(shape_tr)
       
-      def _add_property_summary(properties, paragraph):
-          unordered_list = paragraph.select("ul")
-          
+      def _add_property_summary(properties, tr):
+          td = js.document.createElement("td")
+          unordered_list = js.document.createElement("ul")
+          for values in properties.values():
+              for row in values:
+                  li = js.document.createElement("li")
+                  li.innerText = f"{row[0]}: {row[1]}"
+                  unordered_list.appendChild(li)
+          td.appendChild(unordered_list)
+          tr.appendChild(td)
 
       summarize()
 
@@ -92,6 +124,7 @@
               rdf_file = upload_control.element.files.item(0)
               rdf_file_text = await rdf_file.text()
               incoming_graph.parse(data=rdf_file_text)
+              upload_control.clear()
           elif len(rdf_url.value):
               result = open_url(rdf_url.value)
               if "sinopia" in rdf_url.value:
@@ -100,13 +133,13 @@
               else: # Try parsing the text
                   raw_rdf = result.getvalue()
                   incoming_graph.parse(data=raw_rdf)
+              rdf_url.clear()
           if len(incoming_graph) > 0:
               conforms, results_graph, results_text = pyshacl.validate(incoming_graph, shacl_graph=shacl_graph)
               if conforms is True:
                   pyscript.write('validation-result', f"Passed!\n{results_text}")
               else:
-                  pyscript.write('validation-result', results_text)
-              print(incoming_graph.serialize(format='turtle'))
+                  validation_html(Element("validation-result"), results_text, results_graph)
               
           
 
@@ -117,15 +150,21 @@
       <label id="shacl_size" class="pull-right"></label>
     </div>
     <h2>SHACL Summary</h2>
-    <template id="summary-template">
-      <section class="summary">
-        <p>
-          <a></a>
-          <ul></ul>
-        </p>
-      </section>
-    </template>
-    <div id="shacl_summary"></div>
+    <table class="table table-bordered search-results-list">
+      <thead>
+        <th>Shape Name</th>
+        <th>Target Class(es)</th>
+        <th>Properties</th>
+      </thead>
+      <tbody id="shacl_summary">
+        <template id="summary-template">
+          <section class="summary">
+            <tr></tr>
+         </section>
+        </template>
+     </tbody>
+    </table>
+    <div ></div>
     <h2>Enter URL or upload Source RDF</h2>
     <py-box widths="2/5;2/5;1/5">
       <input id="rdf-url" class="border flex-1 mr-3 border-gray-300 p-2 rounded" type="text"></input>
