@@ -14,7 +14,7 @@
         - './static/wheels/pyshacl-0.19.0-py3-none-any.whl'
         - paths:
           - ./src/pcc_data_exchange/data.py
-          - ./utils.py
+          - ./src/pcc_data_exchange/utils.py
       </py-env>
     </head>
 
@@ -33,20 +33,21 @@
       import pyshacl
       from rdflib import Graph, Namespace
 
+      shacl_urls = [
+        'https://api.development.sinopia.io/resource/18b6edba-b829-47f8-9fab-05b00314bc2e',
+        'https://api.development.sinopia.io/resource/c3067afb-d255-487c-834b-d40ce0ac075d',
+        'https://api.development.sinopia.io/resource/ecea41b3-ce74-4e2f-8a97-299caa46fd74',
+        'https://api.development.sinopia.io/resource/9c496dbc-8717-4a17-a8ac-46e25f0f4c71',
+        'https://api.development.sinopia.io/resource/0733f929-011a-4865-8c80-ef69449f1a25',
+        'https://api.development.sinopia.io/resource/137a8f9d-bee3-410d-b224-aa3712013662' 
+      ]
       
 
-      from data import SHACL, shacl_urls, shacl_graph
+      from data import SHACL, init_shacl_graph
       from utils import validation_html
 
-      for url in shacl_urls:
-          result = open_url(url)
-          json_ld = json.loads(result.getvalue())['data']
-          graph = Graph()
-          graph.parse(data=json.dumps(json_ld), format='json-ld')
-          shacl_graph.parse(data=graph.serialize(format='nt'))
-
-
-
+      shacl_graph = init_shacl_graph(shacl_urls)
+    
       pyscript.write('today', dt.date.today().strftime('%A %B %d, %Y'))
       pyscript.write('shacl_size', f"{len(shacl_graph)} triples from {len(shacl_urls)} Sinopia SHACL Resources")
 
