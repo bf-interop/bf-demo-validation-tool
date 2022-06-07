@@ -14,7 +14,7 @@
         - './static/wheels/pyshacl-0.19.0-py3-none-any.whl'
         - paths:
           - ./src/pcc_data_exchange/data.py
-          - ./src/pcc_data_exchange/utils.py
+          - ./src/pcc_data_exchange/validation.py
       </py-env>
     </head>
 
@@ -43,8 +43,9 @@
       ]
       
 
+      import validation
       from data import SHACL, init_shacl_graph
-      from utils import validation_html
+  
 
       shacl_graph = init_shacl_graph(shacl_urls)
     
@@ -52,95 +53,20 @@
       pyscript.write('shacl_size', f"{len(shacl_graph)} triples from {len(shacl_urls)} Sinopia SHACL Resources")
 
       shacl_summary = Element("shacl_summary")
-      shacl_summary_template = Element("summary-template").select(".summary", from_content=True)
-      shapes = {}
-
-
-      def summarize(*args, **kwargs):
-          shacl_summary.clear()
-          current_shacl = kwargs.get("graph", shacl_graph)
-          for row in current_shacl.query("""SELECT ?node_shape ?label ?target
-          WHERE { ?node_shape a sh:NodeShape .
-                  ?node_shape rdfs:label ?label . 
-                  ?node_shape sh:targetClass ?target .}
-          ORDER BY ?label """):
-              key = str(row[0])
-              if not key in shapes:
-                  shapes[key] = {
-                    "id": row[0],
-                    "label": str(row[1]),
-                    "targets": [row[2],],
-                  }
-                  continue
-              shapes[key]["targets"].append(row[2])
-          for key, shape in shapes.items():
-              shape_html = shacl_summary_template.clone(key, to=shacl_summary)
-              shape_tr = js.document.createElement("tr")
-              shape_td = js.document.createElement("td")
-              anchor = js.document.createElement("a")
-              anchor.setAttribute("href", shape["id"])
-              anchor.innerText = shape["label"]
-              shape_td.appendChild(anchor)
-              shape_tr.appendChild(shape_td)
-              target_td = js.document.createElement("td")
-              for target_class in shape["targets"]:
-                  target_p = js.document.createElement("p")
-                  target_p.innerText = target_class
-                  target_td.appendChild(target_p)
-              shape_tr.appendChild(target_td)
-              properties = {}
-              for obj in current_shacl.objects(subject=shape["id"],
-                                               predicate=SHACL.property):
-                path = current_shacl.value(subject=obj, predicate=SHACL.path)
-                path_key = str(path)
-                if not path_key in properties:
-                    properties[path_key] = [("path", str(path))]
-                min_count = current_shacl.value(subject=obj, predicate=SHACL.minCount)
-                if min_count:
-                    properties[path_key].append(("miniumum count", int(min_count)))
-              _add_property_summary(properties, shape_tr)
-              shacl_summary.element.appendChild(shape_tr)
-      
-      def _add_property_summary(properties, tr):
-          td = js.document.createElement("td")
-          unordered_list = js.document.createElement("ul")
-          for values in properties.values():
-              for row in values:
-                  li = js.document.createElement("li")
-                  li.innerText = f"{row[0]}: {row[1]}"
-                  unordered_list.appendChild(li)
-          td.appendChild(unordered_list)
-          tr.appendChild(td)
-
-      summarize()
-
+    
+      validation.summarize(summary_element=shacl_summary, graph=shacl_graph)
 
       rdf_url = Element("rdf-url")
       upload_control = Element("upload-rdf")
+      validation_result = Element("validation-result")
 
       async def validate_rdf(*args, **kwargs):
-          incoming_graph = Graph()
+          await validation.validate(file_input=upload_control,
+                                    rdf_urls=rdf_url,
+                                    graph=shacl_graph,
+                                    results_element=validation_result)
 
-          if upload_control.element.files.length > 0:
-              rdf_file = upload_control.element.files.item(0)
-              rdf_file_text = await rdf_file.text()
-              incoming_graph.parse(data=rdf_file_text)
-              upload_control.clear()
-          elif len(rdf_url.value):
-              result = open_url(rdf_url.value)
-              if "sinopia" in rdf_url.value:
-                  sinopia_json_ld = json.loads(result.getvalue())['data']
-                  incoming_graph.parse(data=json.dumps(sinopia_json_ld), format='json-ld')
-              else: # Try parsing the text
-                  raw_rdf = result.getvalue()
-                  incoming_graph.parse(data=raw_rdf)
-              rdf_url.clear()
-          if len(incoming_graph) > 0:
-              conforms, results_graph, results_text = pyshacl.validate(incoming_graph, shacl_graph=shacl_graph)
-              if conforms is True:
-                  pyscript.write('validation-result', f"Passed!\n{results_text}")
-              else:
-                  validation_html(Element("validation-result"), results_text, results_graph)
+
               
           
 
