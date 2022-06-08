@@ -44,7 +44,7 @@
       
 
       import validation
-      from data import SHACL, init_shacl_graph
+      from data import SHACL, init_shacl_graph, build_incoming_graph
   
 
       shacl_graph = init_shacl_graph(shacl_urls)
@@ -59,12 +59,20 @@
       rdf_url = Element("rdf-url")
       upload_control = Element("upload-rdf")
       validation_result = Element("validation-result")
+      incoming_graphs = []
 
       async def validate_rdf(*args, **kwargs):
-          await validation.validate(file_input=upload_control,
-                                    rdf_urls=rdf_url,
-                                    graph=shacl_graph,
+          graph, source_rdf_names = await build_incoming_graph(upload_control, 
+                                                               rdf_url)
+          incoming_graphs.append(graph)
+          await validation.validate(graph=graph,
+                                    shacl=shacl_graph,
+                                    source_rdf=source_rdf_names,
                                     results_element=validation_result)
+
+          
+          
+          
 
 
               
@@ -77,7 +85,10 @@
       <label id="shacl_size" class="pull-right"></label>
     </div>
 
-    <h2>Enter URL or upload Source RDF</h2>
+    <h2>Enter URL(s) or upload Source RDF</h2>
+    <p>
+      Separate multiple urls with a comma. 
+    </p>
     <py-box widths="2/5;2/5;1/5">
       <input id="rdf-url" class="border flex-1 mr-3 border-gray-300 p-2 rounded" type="text"></input>
       <input type="file" id="upload-rdf"></input>
@@ -102,10 +113,20 @@
     </table>
     <div ></div>
     <h2>Python REPL</h2>
+    <p>
+      Use the python REPL (Read-Eval-Print-Loop) to investigate the incoming RDF,
+      the current SHACL graph, or even dynamic add rules and iteratively evaluate
+      the sample.
+    </p>
+    <pre>
+        
+
+    </pre>
    <py-box widths="1/2;1/2">
-        <py-repl id="my-repl" auto-generate="true" std-out="output" std-err="err-div"> </py-repl>
+    <py-repl id="my-repl" auto-generate="true" std-out="output" std-err="err-div"> </py-repl>
         <div id="output" class="p-4"></div>
     </py-box>
+
     <hr>
     <footer>
      <div id="err-div" class="bg-red-700 text-white text-center border-t-4 border-green-500 fixed inset-x-0 bottom-0 p-4 hidden"></div>

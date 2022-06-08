@@ -81,25 +81,13 @@ def _add_shape(validation_graph: rdflib.Graph, shape: dict):
     return shape_tr
 
 async def validate(*args, **kwargs):
-    
+    incoming_graph = kwargs.get("graph")
     validation_graph = kwargs.get("shacl")
-    upload_control = kwargs.get("file_input")
-    rdf_urls = kwargs.get("rdf_urls")
     validation_element = kwargs.get("results_element")
+    rdf_file_names = kwargs.get("source_rdf")
 
     validation_element.clear()
-    incoming_graph = rdflib.Graph()
-
-    if upload_control.element.files.length > 0:
-        rdf_file_names = upload_control.value
-        rdf_file = upload_control.element.files.item(0)
-        rdf_file_text = await rdf_file.text()
-        incoming_graph.parse(data=rdf_file_text)
-        upload_control.clear()
-    elif len(rdf_urls.value) > 0:
-        rdf_file_names = rdf_urls.value
-        _build_from_urls(rdf_urls.value, incoming_graph)
-        rdf_urls.clear()
+    
     if len(incoming_graph) > 0:
         conforms, results_graph, results_text = pyshacl.validate(incoming_graph, shacl_graph=validation_graph)
         alert = js.document.createElement("div")
@@ -112,28 +100,9 @@ async def validate(*args, **kwargs):
             alert.innerText = f"{alert_msg} Passed!!"
         else:
             css_classes.append("alert-danger")
-            alert.innerText = "{alert_msg} Failed!"
+            alert.innerText = f"{alert_msg} Failed!"
         for css_class in css_classes:
             alert.classList.add(css_class)
         validation_element.element.appendChild(alert)
         result_html(validation_element, results_text, results_graph)
-
-
-def _build_from_urls(rdf_urls: str, incoming_graph: rdflib.Graph):
-    urls = rdf_urls.split(",")
-    for url in urls:
-        result = open_url(url.strip())
-        if "sinopia" in url:
-            sinopia_json_ld = json.loads(result.getvalue())['data']
-            incoming_graph.parse(
-                data=json.dumps(sinopia_json_ld), 
-                format='json-ld')
-        else:
-            # Tries to guess parser type based on file
-            rdf_type = rdflib.util.guess_format(url)
-            raw_rdf = result.getvalue()
-            incoming_graph.parse(
-                data=raw_rdf,
-                format=rdf_type
-            )
 
