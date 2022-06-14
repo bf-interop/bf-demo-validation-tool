@@ -16,6 +16,8 @@ def _bind_namespaces(graph: rdflib.Graph):
 def _build_from_urls(rdf_urls: str, incoming_graph: rdflib.Graph):
     urls = rdf_urls.split(",")
     for url in urls:
+        if url.startswith("http://"):
+            url = url.replace("http://", "https://")
         result = open_url(url.strip())
         if "sinopia" in url:
             sinopia_json_ld = json.loads(result.getvalue())['data']
@@ -23,6 +25,7 @@ def _build_from_urls(rdf_urls: str, incoming_graph: rdflib.Graph):
                 data=json.dumps(sinopia_json_ld), 
                 format='json-ld')
         else:
+
             # Tries to guess parser type based on file
             rdf_type = rdflib.util.guess_format(url)
             raw_rdf = result.getvalue()
