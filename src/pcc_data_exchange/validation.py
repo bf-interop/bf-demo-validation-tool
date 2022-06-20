@@ -8,12 +8,6 @@ from pyodide.http import open_url
 
 from data import SHACL
 
-def result_html(validation_element, failure_text: str, graph: rdflib.Graph) -> str:
-    pre = js.document.createElement("pre")
-    pre.setAttribute("style", "margin: 1em;")
-    pre.innerHTML = failure_text.replace("<", "&lt;").replace(">", "&gt;")
-    validation_element.element.appendChild(pre)
-
 def summarize(*args, **kwargs):
     shacl_summary = kwargs.get("summary_element")
     current_shacl = kwargs.get("graph")
@@ -80,6 +74,22 @@ def _add_shape(validation_graph: rdflib.Graph, shape: dict):
     _add_property_summary(properties, shape_tr)
     return shape_tr
 
+def _result_html(parent_element, failure_text: str, graph: rdflib.Graph) -> str:
+    pre = js.document.createElement("pre")
+    pre.setAttribute("style", "margin: 1em;")
+    pre.innerHTML = failure_text.replace("<", "&lt;").replace(">", "&gt;")
+    parent_element.appendChild(pre)
+
+
+def _serialize_graph(*args, **kwargs):
+    graph = kwargs.get("graph")
+    pre = js.document.createElement("pre")
+    rdf_format = kwargs.get("format", "turtle")
+    serialized_str = graph.serialize(format=rdf_format)
+    serialized_str = serialized_str.replace("<", "&lt;").replace(">", "&gt;")
+    pre.innerHTML = serialized_str
+    return pre
+
 async def validate(*args, **kwargs):
     incoming_graph = kwargs.get("graph")
     validation_graph = kwargs.get("shacl")
@@ -87,7 +97,18 @@ async def validate(*args, **kwargs):
     rdf_file_names = kwargs.get("source_rdf")
 
     validation_element.clear()
-    
+
+
+    row = js.document.createElement("div")
+    row.classList.add("row")
+
+    results_col = js.document.createElement("div")
+    results_col.classList.add("col")
+    row.appendChild(results_col)
+    serialized_col = js.document.createElement("div")
+    serialized_col.classList.add("col")
+    row.appendChild(serialized_col)
+
     if len(incoming_graph) > 0:
         conforms, results_graph, results_text = pyshacl.validate(incoming_graph, shacl_graph=validation_graph)
         alert = js.document.createElement("div")
@@ -104,5 +125,10 @@ async def validate(*args, **kwargs):
         for css_class in css_classes:
             alert.classList.add(css_class)
         validation_element.element.appendChild(alert)
-        result_html(validation_element, results_text, results_graph)
-
+        _result_html(results_col, results_text, results_graph)
+        incoming_title = js.document.createElement("h3")
+        incoming_title.innerHTML = f"Incoming graph {rdf_file_names}"
+        serialized_col.appendChild(incoming_title)
+        serialized_pre = _serialize_graph(graph=incoming_graph)
+        serialized_col.appendChild(serialized_pre)
+    validation_element.element.appendChild(row)
