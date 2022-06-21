@@ -91,7 +91,8 @@
 
     <h2>Enter URL(s) or upload Source RDF</h2>
     <p>
-      Separate multiple urls with a comma. 
+      Separate multiple urls with a comma. Supports Turtle, RDF/XML, JSON-LD, N-Triples, Notation-3 formats
+      based on <a href="https://rdflib.readthedocs.io/en/stable/apidocs/rdflib.html#rdflib.util.guess_format">rdflib.util.guess_format</a>.
     </p>
     <py-box widths="2/5;2/5;1/5">
       <input id="rdf-url" class="border flex-1 mr-3 border-gray-300 p-2 rounded" type="text"></input>
