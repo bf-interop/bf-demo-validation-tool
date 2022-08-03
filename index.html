@@ -35,7 +35,7 @@
       setattr(sys.stderr, 'isatty', lambda : True)
 
       import pyshacl
-      from rdflib import Graph, Namespace
+      from rdflib import Graph, Namespace, Literal
 
       shacl_urls = [
         'https://api.development.sinopia.io/resource/18b6edba-b829-47f8-9fab-05b00314bc2e',
@@ -55,7 +55,6 @@
       shacl_graph = init_shacl_graph(shacl_urls)
     
       pyscript.write('today', dt.date.today().strftime('%A %B %d, %Y'))
-      pyscript.write('shacl_size', f"{len(shacl_graph)} triples from {len(shacl_urls)} Sinopia SHACL Resources")
 
       shacl_summary = Element("shacl_summary")
     
@@ -119,8 +118,15 @@
       the sample.
     </p>
     <pre>
-        
+ # Add a NodeShape URL to the list of SHACL URLs 
+ shacl_urls.append("{url}")
 
+ # Regenerate the SHACL Validation Graph
+ shacl_graph = init_shacl_graph(shacl_urls)
+
+ # Display SHACL Summarization
+ validation.summarize(summary_element=shacl_summary, graph=shacl_graph)
+ 
     </pre>
    <py-box widths="1/2;1/2">
     <py-repl id="my-repl" auto-generate="true" std-out="output" std-err="err-div"> </py-repl>

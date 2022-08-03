@@ -30,9 +30,12 @@ def summarize(*args, **kwargs):
             continue
         shapes[key]["targets"].append(row[2])
     for key, shape in shapes.items():
-        # shape_html = shacl_summary_template.clone(key, to=shacl_summary)
         shape_tr = _add_shape(current_shacl, shape)
         shacl_summary.element.appendChild(shape_tr)
+
+    # Change label
+    shacl_label = js.document.getElementById("shacl_size")
+    shacl_label.innerHTML = f"{len(current_shacl)} triples from {len(shapes)} Sinopia SHACL Resources"
         
  
       
@@ -71,6 +74,9 @@ def _add_shape(validation_graph: rdflib.Graph, shape: dict):
         min_count = validation_graph.value(subject=obj, predicate=SHACL.minCount)
         if min_count:
             properties[path_key].append(("miniumum count", int(min_count)))
+        pattern = validation_graph.value(subject=obj, predicate=SHACL.pattern)
+        if pattern:
+            properties[path_key].append(("regular expression pattern", str(pattern)))
     _add_property_summary(properties, shape_tr)
     return shape_tr
 
