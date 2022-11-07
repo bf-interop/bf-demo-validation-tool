@@ -4,17 +4,19 @@
       <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
       <link href="static/css/main.css" rel="stylesheet" />
       <link href="static/css/header.css" rel="stylesheet" />
-
+      <script src="static/js/bootstrap.bundle.min.js"></script>
       <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
       <py-env>
         - lxml
         - numpy
+        - pytest
         - matplotlib
         - './static/wheels/rdflib-6.1.1-py3-none-any.whl'
         - './static/wheels/pyshacl-0.19.0-py3-none-any.whl'
         - paths:
           - ./src/pcc_data_exchange/data.py
           - ./src/pcc_data_exchange/validation.py
+          - ./tests/test_validation.py
       </py-env>
       <style>
          pre { padding: .5em; }
@@ -27,13 +29,14 @@
       import json
       import sys
       import datetime as dt
-
+      from traceback import format_exc
+    
       import js
       from pyodide.http import open_url
 
       # Hack to load rdflib
       setattr(sys.stderr, 'isatty', lambda : True)
-
+      
       import pyshacl
       from rdflib import Graph, Namespace, Literal
 
@@ -81,6 +84,23 @@
                                     source_rdf=source_rdf_names,
                                     results_element=validation_result)
 
+      
+      async def run_tests(*args, **kwargs):
+          console.info("Running tests")
+          from test_validation import ValidationUnitTests
+          validation_display = Element("test-results")
+          validation_test = ValidationUnitTests()
+          try:
+              validation_test.test_serialize_graph()
+              msg = "All Tests Passed"
+          except AssertionError as err:
+              msg = format_exc()
+          validation_display.element.innerHTML = msg
+          
+                  
+          
+          
+
          
 
     </py-script>
@@ -89,12 +109,27 @@
       <h1>PCC Interchange Processing</h1>
       <label id="shacl_size" class="pull-right"></label>
     </div>
-
-    <h2>Enter URL(s) or upload Source RDF</h2>
+    <div class="row">
+      <div class="col-9">
+        <h2>Enter URL(s) or upload Source RDF</h2>
+      </div>
+      <div class="col">
+        <div class="dropdown">
+          <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            More
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#"  data-bs-toggle="modal" data-bs-target="#aboutAppModal">About</a></li>
+            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#runTestsModal">Tests</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
     <p>
       Separate multiple urls with a comma. Supports Turtle, RDF/XML, JSON-LD, N-Triples, Notation-3 formats
       based on <a href="https://rdflib.readthedocs.io/en/stable/apidocs/rdflib.html#rdflib.util.guess_format">rdflib.util.guess_format</a>.
     </p>
+      
     <py-box widths="2/5;2/5;1/5">
       <input id="rdf-url" class="border flex-1 mr-3 border-gray-300 p-2 rounded" type="text"></input>
       <input type="file" id="upload-rdf"></input>
@@ -150,5 +185,51 @@
         Source code licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2</a>.
      </p> 
     </footer>
+
+    <div class="modal" tabindex="-1" id="aboutAppModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">About PCC BIBFRAME Validation App</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p>A proof-of-concept application for validating <a href="https://bibframe.org/">BIBFRAME</a> 
+              RDF using <a href="https://www.w3.org/TR/shacl/">SHACL</a> Shapes Graph. SHACL 
+              graphs are created and hosted through <a href="https://sinopia.io/">Sinopia</a>
+              Linked Data Edtior.
+            </p>
+            <p>
+              This application provides a user interface to interact with 
+              validation. The source code for SHACL validation is available
+              at <a href="https://github.com/LD4P/pcc-data-exchange">PCC Data Exchange</a>
+              and under the Apache 2 open source license.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" tabindex="-1" id="runTestsModal">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Run Test Suite</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p id="test-results">
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="runTestsBtn" pys-onClick="run_tests">Run Tests</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>    
   </body>
 </html>

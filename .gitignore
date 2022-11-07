@@ -1,4 +1,5 @@
 .mypy_cache/
+/.ipynb_checkpoints/
 /.coverage
 /.coverage.*
 /.nox/
