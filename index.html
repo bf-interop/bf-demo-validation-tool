@@ -158,6 +158,12 @@
       the sample.
     </p>
     <pre>
+ # Import dependencies
+ import rdflib
+ import pyshacl
+ 
+ from data import BF, SHACL
+
  # Add a NodeShape URL to the list of SHACL URLs 
  shacl_urls.append("{url}")
 
@@ -167,7 +173,6 @@
  # Display SHACL Summarization
  validation.summarize(summary_element=shacl_summary, graph=shacl_graph)
  
- # Add a new property to a 
     </pre>
    <div class="row">
     <div class="col">
