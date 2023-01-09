@@ -1,23 +1,18 @@
 <!DOCTYPE html>
 <html>
     <head>
-      <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+      <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
       <link href="static/css/main.css" rel="stylesheet" />
       <link href="static/css/header.css" rel="stylesheet" />
       <script src="static/js/bootstrap.bundle.min.js"></script>
-      <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
-      <py-env>
-        - lxml
-        - numpy
-        - pytest
-        - matplotlib
-        - './static/wheels/rdflib-6.1.1-py3-none-any.whl'
-        - './static/wheels/pyshacl-0.19.0-py3-none-any.whl'
-        - paths:
-          - ./src/pcc_data_exchange/data.py
-          - ./src/pcc_data_exchange/validation.py
-          - ./tests/test_validation.py
-      </py-env>
+      <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+      <py-config type="toml">
+        packages = ["lxml", "numpy", "pytest", "matplotlib", './static/wheels/rdflib-6.1.1-py3-none-any.whl', './static/wheels/pyshacl-0.19.0-py3-none-any.whl']
+
+        [[fetch]]
+        from = "src/pcc_data_exchange"
+        files = ["data.py", "validation.py"]
+      </py-config>
       <style>
          pre { padding: .5em; }
  
@@ -75,6 +70,8 @@
       validation_result = Element("validation-result")
       incoming_graphs = []
 
+      sh = Namespace("http://www.w3.org/ns/shacl#")
+      
       async def validate_rdf(*args, **kwargs):
           graph, source_rdf_names = await build_incoming_graph(upload_control, 
                                                                rdf_url)
@@ -97,12 +94,6 @@
               msg = format_exc()
           validation_display.element.innerHTML = msg
           
-                  
-          
-          
-
-         
-
     </py-script>
     <div class="editor-navbar">
       <label id="today"></label>
@@ -130,11 +121,18 @@
       based on <a href="https://rdflib.readthedocs.io/en/stable/apidocs/rdflib.html#rdflib.util.guess_format">rdflib.util.guess_format</a>.
     </p>
       
-    <py-box widths="2/5;2/5;1/5">
-      <input id="rdf-url" class="border flex-1 mr-3 border-gray-300 p-2 rounded" type="text"></input>
-      <input type="file" id="upload-rdf"></input>
-      <button id="validate-rdf-btn" class="btn-primary" pys-onClick="validate_rdf">Validate RDF</button>
-    </py-box>
+    <div class="row">
+      <div class="col-6">
+        <input id="rdf-url" class="form-control" type="text"></input>
+      </div>
+      <div class="col-3">
+        <input type="file" id="upload-rdf"></input>
+      </div>
+      <div class="col-3">
+        <button id="validate-rdf-btn" class="btn-primary" py-click="validate_rdf()">Validate RDF</button>
+      </div>
+    </div>
+    </div>
     <div id="validation-result"></div>
     <hr>
     <h2>SHACL Summary</h2>
@@ -152,7 +150,7 @@
         </template>
      </tbody>
     </table>
-    <div ></div>
+
     <h2>Python REPL</h2>
     <p>
       Use the python REPL (Read-Eval-Print-Loop) to investigate the incoming RDF,
@@ -169,15 +167,17 @@
  # Display SHACL Summarization
  validation.summarize(summary_element=shacl_summary, graph=shacl_graph)
  
+ # Add a new property to a 
     </pre>
-   <py-box widths="1/2;1/2">
-    <py-repl id="my-repl" auto-generate="true" std-out="output" std-err="err-div"> </py-repl>
-        <div id="output" class="p-4"></div>
-    </py-box>
-
+   <div class="row">
+    <div class="col">
+      <py-repl id="my-repl" auto-generate="true" std-out="output" std-err="err-div"> </py-repl>
+      <div id="output" class="p-4"></div>
+    </div>
+   </div>
+    <div id="err-div" class="bg-red-700 text-white text-center border-t-4 border-green-500 fixed inset-x-0 bottom-0 p-4 hidden"></div>
     <hr>
     <footer>
-     <div id="err-div" class="bg-red-700 text-white text-center border-t-4 border-green-500 fixed inset-x-0 bottom-0 p-4 hidden"></div>
       <p xmlns:cc="http://creativecommons.org/ns#" >
         This work is licensed under <a href="http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" 
         target="_blank" 
@@ -225,7 +225,7 @@
             </p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" id="runTestsBtn" pys-onClick="run_tests">Run Tests</button>
+            <button type="button" class="btn btn-primary" id="runTestsBtn" py-onClick="run_tests">Run Tests</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
