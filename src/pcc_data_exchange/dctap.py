@@ -25,9 +25,9 @@ def _add_property(row: dict, graph: rdflib.Graph):
     graph.add((property_bnode, rdflib.RDF.type, SHACL.PropertyShape))
     graph.add((property_bnode, SHACL.path, rdflib.URIRef(row['propertyID'])))
     if row['mandatory'] is True:
-        graph.add((property_bnode, SHACL.minCount, rdflib.Literal("1")))
+        graph.add((property_bnode, SHACL.minCount, rdflib.Literal(1)))
     if row["repeatable"] is False:
-        graph.add((property_bnode, SHACL.maxCount, rdflib.Literal("1")))
+        graph.add((property_bnode, SHACL.maxCount, rdflib.Literal(1)))
     
 
 async def handler(file_input, dctap_element, shacl_graph: rdflib.Graph) -> rdflib.Graph:

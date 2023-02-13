@@ -117,11 +117,36 @@
       <h1>PCC Interchange Processing</h1>
       <label id="shacl_size" class="pull-right"></label>
     </div>
-    <div class="row">
-      <div class="col-9">
-        <h2>Enter URL(s) or upload Source RDF</h2>
-      </div>
-      <div class="col">
+
+    <ul class="nav nav-pills">
+      <li class="nav-item">
+        <button class="nav-link active" 
+                aria-current="page" 
+                data-bs-toggle="tab" 
+                data-bs-target="#validation-tab"
+                aria-selected="true"
+                aria-controls="validation-tab" 
+                type="button" 
+                role="tab">Validation</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link"
+           data-bs-toggle="tab" 
+           data-bs-target="#shacl-dctap-tab"
+           type="button" 
+           role="tab"
+           aria-selected="false"
+           aria-controls="shacl-dctap-tab" 
+           >SHACL &amp; DCTAP</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" 
+           data-bs-toggle="tab" 
+           data-bs-target="#python-repl"
+           type="button"
+           role="tab">REPL</button>
+      </li>
+      <li class="nav-item">
         <div class="dropdown">
           <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
             More
@@ -131,90 +156,104 @@
             <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#runTestsModal">Tests</a></li>
           </ul>
         </div>
-      </div>
-    </div>
-    <p>
-      Separate multiple urls with a comma. Supports Turtle, RDF/XML, JSON-LD, N-Triples, Notation-3 formats
-      based on <a href="https://rdflib.readthedocs.io/en/stable/apidocs/rdflib.html#rdflib.util.guess_format">rdflib.util.guess_format</a>.
-    </p>
-      
-    <div class="row">
-      <div class="col-6">
-        <input id="rdf-url" class="form-control" type="text"></input>
-      </div>
-      <div class="col-3">
-        <input type="file" id="upload-rdf"></input>
-      </div>
-      <div class="col-3">
-        <button id="validate-rdf-btn" class="btn-primary" py-click="validate_rdf()">Validate RDF</button>
-      </div>
-    </div>
-    </div>
-    <div id="validation-result"></div>
-    <hr>
-    <h2>SHACL Summary</h2>
-    <table class="table table-bordered search-results-list">
-      <thead>
-        <th>Shape Name</th>
-        <th>Target Class(es)</th>
-        <th>Properties</th>
-      </thead>
-      <tbody id="shacl_summary">
-        <template id="summary-template">
-          <section class="summary">
-            <tr></tr>
-         </section>
-        </template>
-     </tbody>
-    </table>
-    <hr>
-    <h2>DCTAP Support</h2>
-    <div>
-      <strong>Experimental!</strong> Upload a BIBFRAME <a href="https://github.com/dcmi/dctap">DCTAP</a> csv file that is 
-       converted to SHACL and validate against the RDF graph
-      <div class="row">
-        <div class="col-4">
-          <label for="upload-dctap">Upload CSV</label>
-      	  <input type="file" id="upload-dctap"></input>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      <div id="validation-tab" class="tab-pane fade show active">
+        <div class="row">
+          <div class="col-9">
+            <h2>Enter URL(s) or upload Source RDF</h2>
+          </div>
         </div>
-        <div class="col-4">
-          <button id="load-dctap-btn" class="btn-primary" py-click="load_dctap()">Load DCTAP</button> 
+        <p>
+          Separate multiple urls with a comma. Supports Turtle, RDF/XML, JSON-LD, N-Triples, Notation-3 formats
+          based on <a href="https://rdflib.readthedocs.io/en/stable/apidocs/rdflib.html#rdflib.util.guess_format">rdflib.util.guess_format</a>.
+        </p>
+          
+        <div class="row">
+          <div class="col-6">
+            <input id="rdf-url" class="form-control" type="text"></input>
+          </div>
+          <div class="col-3">
+            <input type="file" id="upload-rdf"></input>
+          </div>
+          <div class="col-3">
+            <button id="validate-rdf-btn" class="btn-primary" py-click="validate_rdf()">Validate RDF</button>
+          </div>
+        </div>
+
+        <div id="validation-result"></div>
+      </div>
+
+      <div id="shacl-dctap-tab" class="tab-pane fade">
+        <h2>SHACL Summary</h2>
+        <table class="table table-bordered search-results-list">
+          <thead>
+            <th>Shape Name</th>
+            <th>Target Class(es)</th>
+            <th>Properties</th>
+          </thead>
+          <tbody id="shacl_summary">
+            <template id="summary-template">
+              <section class="summary">
+                <tr></tr>
+            </section>
+            </template>
+        </tbody>
+        </table>
+        <hr>
+        <h2>DCTAP Support</h2>
+        <div>
+          <strong>Experimental!</strong> Upload a BIBFRAME <a href="https://github.com/dcmi/dctap">DCTAP</a> csv file that is 
+          converted to SHACL and validate against the RDF graph
+          <div class="row">
+            <div class="col-4">
+              <label for="upload-dctap">Upload CSV</label>
+              <input type="file" id="upload-dctap"></input>
+            </div>
+            <div class="col-4">
+              <button id="load-dctap-btn" class="btn-primary" py-click="load_dctap()">Load DCTAP</button> 
+            </div>
+          </div>
+          <div id="dctap-table"></div>
         </div>
       </div>
-      <div id="dctap-table"></div>
+
+      <div id="python-repl" class="tab-pane fade">
+        <h2>Python REPL</h2>
+        <p>
+          Use the python REPL (Read-Eval-Print-Loop) to investigate the incoming RDF,
+          the current SHACL graph, or even dynamic add rules and iteratively evaluate
+          the sample.
+        </p>
+        <pre>
+    # Import dependencies
+    import rdflib
+    import pyshacl
+    
+    from data import BF, SHACL
+
+    # Add a NodeShape URL to the list of SHACL URLs 
+    shacl_urls.append("{url}")
+
+    # Regenerate the SHACL Validation Graph
+    shacl_graph = init_shacl_graph(shacl_urls)
+
+    # Display SHACL Summarization
+    validation.summarize(summary_element=shacl_summary, graph=shacl_graph)
+    
+        </pre>
+        <div class="row">
+          <div class="col">
+            <py-repl id="my-repl" auto-generate="true" std-out="output" std-err="err-div"> </py-repl>
+            <div id="output" class="p-4"></div>
+          </div>
+        </div>
+        <div id="err-div" class="bg-red-700 text-white text-center border-t-4 border-green-500 fixed inset-x-0 bottom-0 p-4 hidden"></div>
+      </div>
     </div>
-    <hr>
-    <h2>Python REPL</h2>
-    <p>
-      Use the python REPL (Read-Eval-Print-Loop) to investigate the incoming RDF,
-      the current SHACL graph, or even dynamic add rules and iteratively evaluate
-      the sample.
-    </p>
-    <pre>
- # Import dependencies
- import rdflib
- import pyshacl
- 
- from data import BF, SHACL
 
- # Add a NodeShape URL to the list of SHACL URLs 
- shacl_urls.append("{url}")
-
- # Regenerate the SHACL Validation Graph
- shacl_graph = init_shacl_graph(shacl_urls)
-
- # Display SHACL Summarization
- validation.summarize(summary_element=shacl_summary, graph=shacl_graph)
- 
-    </pre>
-   <div class="row">
-    <div class="col">
-      <py-repl id="my-repl" auto-generate="true" std-out="output" std-err="err-div"> </py-repl>
-      <div id="output" class="p-4"></div>
-    </div>
-   </div>
-    <div id="err-div" class="bg-red-700 text-white text-center border-t-4 border-green-500 fixed inset-x-0 bottom-0 p-4 hidden"></div>
-    <hr>
     <footer>
       <p xmlns:cc="http://creativecommons.org/ns#" >
         This work is licensed under <a href="http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" 
