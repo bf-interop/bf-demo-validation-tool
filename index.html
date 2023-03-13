@@ -12,6 +12,11 @@
         [[fetch]]
         from = "src/pcc_data_exchange"
         files = ["data.py", "validation.py", "dctap.py"]
+
+        [[fetch]]
+        from = "tests"
+        files = ["test_validation.py"]
+
       </py-config>
       <style>
          pre { padding: .5em; }
@@ -96,7 +101,7 @@
 
       
       async def run_tests(*args, **kwargs):
-          console.info("Running tests")
+          js.console.info("Running tests")
           from test_validation import ValidationUnitTests
           validation_display = Element("test-results")
           validation_test = ValidationUnitTests()
@@ -302,7 +307,7 @@
             </p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" id="runTestsBtn" py-onClick="run_tests">Run Tests</button>
+            <button type="button" class="btn btn-primary" id="runTestsBtn" py-click="run_tests()">Run Tests</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
