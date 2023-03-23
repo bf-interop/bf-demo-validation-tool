@@ -15,7 +15,8 @@ def summarize(*args, **kwargs):
 
     shacl_summary.clear()
 
-    for row in current_shacl.query("""SELECT ?node_shape ?label ?target
+    for row in current_shacl.query("""PREFIX sh: <http://www.w3.org/ns/shacl#>
+    SELECT ?node_shape ?label ?target
     WHERE { ?node_shape a sh:NodeShape .
             ?node_shape rdfs:label ?label . 
             ?node_shape sh:targetClass ?target .}

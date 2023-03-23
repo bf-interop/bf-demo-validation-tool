@@ -12,6 +12,8 @@ def _bind_namespaces(graph: rdflib.Graph):
     graph.namespace_manager.bind("bf", BF)
     graph.namespace_manager.bind("bflc", BFLC)
     graph.namespace_manager.bind("sinopia",SINOPIA)
+    graph.namespace_manager.bind("sh", SHACL)
+
 
 def _build_from_urls(rdf_urls: str, incoming_graph: rdflib.Graph):
     urls = rdf_urls.split(",")

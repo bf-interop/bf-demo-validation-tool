@@ -7,7 +7,7 @@
       <script src="static/js/bootstrap.bundle.min.js"></script>
       <script defer src="https://pyscript.net/latest/pyscript.js"></script>
       <py-config type="toml">
-        packages = ["lxml", "numpy", "pytest", "pandas", './static/wheels/rdflib-6.1.1-py3-none-any.whl', './static/wheels/pyshacl-0.19.0-py3-none-any.whl']
+        packages = ["lxml", "numpy", "pytest", "pandas", './static/wheels/rdflib-6.3.1-py3-none-any.whl', './static/wheels/pyshacl-0.20.0-py3-none-any.whl']
 
         [[fetch]]
         from = "src/pcc_data_exchange"
@@ -114,7 +114,7 @@
 
       async def load_dctap(*args, **kwargs):
           await dctap.handler(dctap_file, dctap_table, shacl_graph)
-          
+          await validation.summarize(summary_element=shacl_summary, graph=shacl_graph)
           
     </py-script>
     <div class="editor-navbar">
@@ -137,12 +137,22 @@
       <li class="nav-item">
         <button class="nav-link"
            data-bs-toggle="tab" 
-           data-bs-target="#shacl-dctap-tab"
+           data-bs-target="#shacl-tab"
            type="button" 
            role="tab"
            aria-selected="false"
-           aria-controls="shacl-dctap-tab" 
-           >SHACL &amp; DCTAP</button>
+           aria-controls="shacl-tab" 
+           >SHACL Summary</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link"
+                data-bs-toggle="tab" 
+                data-bs-target="#dctap-tab"
+                type="button" 
+                role="tab"
+                aria-selected="false"
+                aria-controls="shacl-tab"
+          >DCTAP</button>
       </li>
       <li class="nav-item">
         <button class="nav-link" 
@@ -191,7 +201,7 @@
         <div id="validation-result"></div>
       </div>
 
-      <div id="shacl-dctap-tab" class="tab-pane fade">
+      <div id="shacl-tab" class="tab-pane fade">
         <h2>SHACL Summary</h2>
         <table class="table table-bordered search-results-list">
           <thead>
@@ -207,9 +217,11 @@
             </template>
         </tbody>
         </table>
-        <hr>
+      </div>
+
+      <div id="dctap-tab" class="tab-pane fade">
         <h2>DCTAP Support</h2>
-        <div>
+        <div style="background-color: white; padding: .5em">
           <strong>Experimental!</strong> Upload a BIBFRAME <a href="https://github.com/dcmi/dctap">DCTAP</a> csv file that is 
           converted to SHACL and validate against the RDF graph
           <div class="row">

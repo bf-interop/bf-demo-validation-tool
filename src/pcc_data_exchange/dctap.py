@@ -11,6 +11,18 @@ SHACL = rdflib.Namespace("http://www.w3.org/ns/shacl#")
 SINOPIA = rdflib.Namespace("http://sinopia.io/vocabulary/")
 
 
+def _sh_datatype(datatype: str,
+                 property_bnode: rdflib.BNode,
+                 graph: rdflib.Graph):
+    """Adds a SHACL datatype to a property shape"""
+    match datatype:
+        case "rdf:langString":
+            graph.add((property_bnode, SHACL.datatype, rdflib.RDF.langString))
+
+        case "xsd:string":
+            graph.add((property_bnode, SHACL.datatype, rdflib.XSD.string))
+
+
 def _add_property(row: dict, graph: rdflib.Graph):
     """Adds a SHACL Node Property to the shape graph"""
     shape_id = rdflib.URIRef(row['shapeID'])
@@ -19,6 +31,7 @@ def _add_property(row: dict, graph: rdflib.Graph):
     if node_shape is None:
         graph.add((shape_id, rdflib.RDF.type, SHACL.NodeShape))
         graph.add((shape_id, rdflib.RDFS.label, rdflib.Literal(row['shapeLabel'])))
+
     # Adds SHACL Property Shape
     property_bnode = rdflib.BNode()
     graph.add((shape_id, SHACL.property, property_bnode))
@@ -28,6 +41,10 @@ def _add_property(row: dict, graph: rdflib.Graph):
         graph.add((property_bnode, SHACL.minCount, rdflib.Literal(1)))
     if row["repeatable"] is False:
         graph.add((property_bnode, SHACL.maxCount, rdflib.Literal(1)))
+    _sh_datatype(row["valueDataType"], property_bnode, graph)
+        
+
+
     
 
 async def handler(file_input, dctap_element, shacl_graph: rdflib.Graph) -> rdflib.Graph:
