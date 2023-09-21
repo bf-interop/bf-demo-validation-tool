@@ -36,6 +36,7 @@
 
   <body>
     <py-script>
+      import asyncio
       import json
       import sys
       import datetime as dt
@@ -194,7 +195,7 @@
             <input type="file" id="upload-rdf"></input>
           </div>
           <div class="col-3">
-            <button id="validate-rdf-btn" class="btn-primary" py-click="validate_rdf()">Validate RDF</button>
+            <button id="validate-rdf-btn" class="btn-primary" py-click="asyncio.ensure_future(validate_rdf())">Validate RDF</button>
           </div>
         </div>
 
@@ -230,7 +231,7 @@
               <input type="file" id="upload-dctap"></input>
             </div>
             <div class="col-4">
-              <button id="load-dctap-btn" class="btn-primary" py-click="load_dctap()">Load DCTAP</button> 
+              <button id="load-dctap-btn" class="btn-primary" py-click="asyncio.ensure_future(load_dctap())">Load DCTAP</button> 
             </div>
           </div>
           <div id="dctap-table"></div>
@@ -280,7 +281,7 @@
      </p> 
     </footer>
 
-    <div class="modal" tabindex="-1" id="aboutAppModal">
+    <div class="modal" tabindex="-1" id"aboutAppModal">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -319,7 +320,7 @@
             </p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" id="runTestsBtn" py-click="run_tests()">Run Tests</button>
+            <button type="button" class="btn btn-primary" id="runTestsBtn" py-click="asyncio.ensure_future(run_tests())">Run Tests</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
