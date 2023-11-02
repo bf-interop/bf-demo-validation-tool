@@ -114,7 +114,12 @@
           validation_display.element.innerHTML = msg
 
       async def load_dctap(*args, **kwargs):
-          await dctap.handler(dctap_file, dctap_table, shacl_graph)
+          use_existing_shacl_ckbox = Element("use-existing-shacl")
+          if use_existing_shacl_ckbox.element.checked:
+              dctap_graph = shacl_graph
+          else:
+              dctap_graph = init_shacl_graph([])
+          await dctap.handler(dctap_file, dctap_table, dctap_graph)
           await validation.summarize(summary_element=shacl_summary, graph=shacl_graph)
           
     </py-script>
@@ -225,12 +230,15 @@
         <div style="background-color: white; padding: .5em">
           <strong>Experimental!</strong> Upload a BIBFRAME <a href="https://github.com/dcmi/dctap">DCTAP</a> csv file that is 
           converted to SHACL and validate against the RDF graph
+  
           <div class="row">
             <div class="col-4">
               <label for="upload-dctap">Upload CSV</label>
               <input type="file" id="upload-dctap"></input>
             </div>
             <div class="col-4">
+              <input type="checkbox" id="use-existing-shacl"></input>
+              <label for="use-existing-shacl">Add to existing SHACL graph</label>
               <button id="load-dctap-btn" class="btn-primary" py-click="asyncio.ensure_future(load_dctap())">Load DCTAP</button> 
             </div>
           </div>
