@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+      <title>SHACL/DCTAP BIBFRAME Validation Application</title>
       <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
       <link href="static/css/main.css" rel="stylesheet" />
       <link href="static/css/header.css" rel="stylesheet" />
@@ -95,6 +96,7 @@
           graph, source_rdf_names = await build_incoming_graph(upload_control, 
                                                                rdf_url)
           incoming_graphs.append(graph)
+
           await validation.validate(graph=graph,
                                     shacl=shacl_graph,
                                     source_rdf=source_rdf_names,
@@ -102,7 +104,6 @@
 
       
       async def run_tests(*args, **kwargs):
-          js.console.info("Running tests")
           from test_validation import ValidationUnitTests
           validation_display = Element("test-results")
           validation_test = ValidationUnitTests()
@@ -113,14 +114,16 @@
               msg = format_exc()
           validation_display.element.innerHTML = msg
 
+
       async def load_dctap(*args, **kwargs):
+          global shacl_graph
           use_existing_shacl_ckbox = Element("use-existing-shacl")
           if use_existing_shacl_ckbox.element.checked:
               dctap_graph = shacl_graph
           else:
               dctap_graph = init_shacl_graph([])
-          await dctap.handler(dctap_file, dctap_table, dctap_graph)
-          await validation.summarize(summary_element=shacl_summary, graph=shacl_graph)
+          shacl_graph = await dctap.handler(dctap_file, dctap_table, dctap_graph)
+          validation.summarize(summary_element=shacl_summary, graph=shacl_graph)
           
     </py-script>
     <div class="editor-navbar">
@@ -241,6 +244,11 @@
               <label for="use-existing-shacl">Add to existing SHACL graph</label>
               <button id="load-dctap-btn" class="btn-primary" py-click="asyncio.ensure_future(load_dctap())">Load DCTAP</button> 
             </div>
+          </div>
+          <div id="dctap-error" class="alert alert-danger alert-dismissible fade show d-none">
+             <h4 class="alert-heading">DCTAP Parsing Error <span></span></h4>
+             <div id="dctap-error-body"></div>
+             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
           </div>
           <div id="dctap-table"></div>
         </div>
