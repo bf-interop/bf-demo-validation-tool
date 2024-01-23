@@ -117,7 +117,7 @@ async def validate(*args, **kwargs):
     row.appendChild(serialized_col)
 
     if len(incoming_graph) > 0:
-        conforms, results_graph, results_text = pyshacl.validate(incoming_graph, shacl_graph=validation_graph)
+        conforms, results_graph, results_text = pyshacl.validate(incoming_graph, shacl_graph=validation_graph, allow_warnings=True)
         alert = js.document.createElement("div")
         alert.setAttribute("style", "margin: 1em;")
         alert.setAttribute("role", "alert")
