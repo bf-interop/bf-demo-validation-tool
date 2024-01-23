@@ -98,8 +98,17 @@ def _add_property(row: dict, graph: rdflib.Graph):
         graph.add((property_bnode, SHACL.minCount, rdflib.Literal(1)))
     if row["repeatable"] is False:
         graph.add((property_bnode, SHACL.maxCount, rdflib.Literal(1)))
+    value_shape = row.get("valueShape")
+    if isinstance(value_shape, str) and len(value_shape) > 0:
+        graph.add((property_bnode, SHACL.node, rdflib.URIRef(row["valueShape"])))
     if "valueDataType" in row:
         _sh_datatype(row["valueDataType"], property_bnode, graph)
+
+def _add_targets(row: dict, graph: rdflib.Graph):
+    targets = [_prop_id_to_url(target.strip()) for target in row.get("target").split(";")]
+    shape_id = rdflib.URIRef(row["shapeID"])
+    for target in targets:
+        graph.add((shape_id, SHACL.targetClass, target))
 
 
 def _prop_id_to_url(property_id):
@@ -148,11 +157,8 @@ async def handler(file_input, dctap_element, shacl_graph: rdflib.Graph) -> rdfli
         for i, row in enumerate(dctap_df.iterrows()):
             if row[1]["shapeID"] is None:
                 continue
-            if row[1].get("propertyID", "") == str(SHACL.targetClass):
-                shape_id = rdflib.URIRef(row[1]["shapeID"])
-                target_id = rdflib.URIRef(row[1]["valueConstraint"])
-                shacl_graph.add((shape_id, SHACL.targetClass, target_id))
-                continue
+            if row[1].get("target") != None:
+                _add_targets(row[1], shacl_graph)
             try:
                 _add_property(row[1], shacl_graph)
             except Exception as e:
