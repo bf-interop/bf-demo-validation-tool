@@ -149,7 +149,7 @@ async def handler(file_input, dctap_element, shacl_graph: rdflib.Graph) -> rdfli
         dctap_file = file_input.element.files.item(0)
         dctap_text = await dctap_file.text()
         try:
-            dctap_df = pd.read_csv(io.StringIO(dctap_text))
+            dctap_df = pd.read_csv(io.StringIO(dctap_text), sep="\t")
             dctap_df = dctap_df.replace({np.nan: None})
         except Exception as e:
             dctap_error.classList.remove("d-none")

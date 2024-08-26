@@ -36,7 +36,7 @@ def summarize(*args, **kwargs):
 
     # Change label
     shacl_label = js.document.getElementById("shacl_size")
-    shacl_label.innerHTML = f"{len(current_shacl)} triples from {len(shapes)} Sinopia SHACL Resources"
+    shacl_label.innerHTML = f"{len(current_shacl)} triples from {len(shapes)} SHACL Resources"
         
  
       
