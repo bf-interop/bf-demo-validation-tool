@@ -11,7 +11,7 @@
         packages = ["lxml", "numpy", "pytest", "pandas", './static/wheels/pyshacl-0.26.0-py3-none-any.whl', './static/wheels/rdflib-7.0.0-py3-none-any.whl']
 
         [[fetch]]
-        from = "src/pcc_data_exchange"
+        from = "src/bf_demo_validation_tool"
         files = ["data.py", "validation.py", "dctap.py"]
 
         [[fetch]]
@@ -58,7 +58,7 @@
 
       shacl_graph = init_shacl_graph(shacl_urls)
     
-      pyscript.write('today', dt.date.today().strftime('%A %B %d, %Y'))
+      Element('today').write(dt.date.today().strftime('%A %B %d, %Y'))
 
       shacl_summary = Element("shacl_summary")
     
