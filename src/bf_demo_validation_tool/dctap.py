@@ -74,7 +74,6 @@ def _add_property(row: dict, graph: rdflib.Graph):
     if node_shape is None:
         graph.add((shape_id, rdflib.RDF.type, SHACL.NodeShape))
         graph.add((shape_id, rdflib.RDFS.label, rdflib.Literal(row["shapeLabel"])))
-
     # Adds SHACL Property Shape
     property_bnode = rdflib.BNode()
     graph.add((shape_id, SHACL.property, property_bnode))
@@ -99,7 +98,7 @@ def _add_property(row: dict, graph: rdflib.Graph):
     if row["repeatable"] is False:
         graph.add((property_bnode, SHACL.maxCount, rdflib.Literal(1)))
     value_shape = row.get("valueShape")
-    if isinstance(value_shape, str) and len(value_shape) > 0:
+    if isinstance(value_shape, str) and len(value_shape.strip()) > 0:
         graph.add((property_bnode, SHACL.node, rdflib.URIRef(row["valueShape"])))
     if "valueDataType" in row:
         _sh_datatype(row["valueDataType"], property_bnode, graph)
@@ -130,12 +129,15 @@ def _prop_id_to_url(property_id):
             case "rdfs":
                 path_object = getattr(rdflib.RDFS, suffix)
 
+            case _:
+                js.console.log(f"Unknown namespace {namespace}")
+
     elif property_id.startswith("http"):
         path_object = rdflib.URIRef(property_id)
 
     else:
         path_object = rdflib.Literal(property_id)
-
+    
     return path_object
 
 
