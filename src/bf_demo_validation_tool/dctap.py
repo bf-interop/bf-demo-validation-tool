@@ -1,4 +1,5 @@
 """Initial support for DCTAP <https://github.com/dcmi/dctap> to BF SHACL validation"""
+
 __author__ = "Jeremy Nelson"
 import io
 import sys
@@ -103,8 +104,11 @@ def _add_property(row: dict, graph: rdflib.Graph):
     if "valueDataType" in row:
         _sh_datatype(row["valueDataType"], property_bnode, graph)
 
+
 def _add_targets(row: dict, graph: rdflib.Graph):
-    targets = [_prop_id_to_url(target.strip()) for target in row.get("target").split(";")]
+    targets = [
+        _prop_id_to_url(target.strip()) for target in row.get("target").split(";")
+    ]
     shape_id = rdflib.URIRef(row["shapeID"])
     for target in targets:
         graph.add((shape_id, SHACL.targetClass, target))
@@ -137,7 +141,7 @@ def _prop_id_to_url(property_id):
 
     else:
         path_object = rdflib.Literal(property_id)
-    
+
     return path_object
 
 
@@ -166,10 +170,8 @@ async def handler(file_input, dctap_element, shacl_graph: rdflib.Graph) -> rdfli
             except Exception as e:
                 dctap_error.classList.remove("d-none")
                 dctap_error_body.innerHTML = f"""<strong>Property: {row[1]["propertyID"]}</strong><p>{sys.exc_info()}</p>"""
-    dctap_element.clear()
+    # dctap_element.clear()
     raw_shacl = shacl_graph.serialize(format="turtle")
     raw_shacl = raw_shacl.replace("<", "&lt;").replace(">", "&gt;")
-    dctap_element.element.innerHTML = (
-        f"""<h3>Resulting SHACL</h3><pre>{raw_shacl}</pre>"""
-    )
+    dctap_element.innerHTML = f"""<h3>Resulting SHACL</h3><pre>{raw_shacl}</pre>"""
     return shacl_graph
