@@ -26,6 +26,9 @@ from data import SHACL, init_shacl_graph, build_incoming_graph
 today = js.document.getElementById('today')
 today.innerHTML = dt.datetime.now().strftime('%A %B %d, %Y')
 
+splash_modal_close_btn = js.document.getElementById('splashModalCloseBtn')
+splash_modal_close_btn.click()
+
 # shacl_summary = Element("shacl_summary")
 
 # validation.summarize(summary_element=shacl_summary, graph=shacl_graph)
