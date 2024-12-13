@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <title>SHACL/DCTAP BIBFRAME Validation Application</title>
+      <link rel="stylesheet" href="https://pyscript.net/releases/2024.11.1/core.css" />
+      <link href="static/css/main.css" rel="stylesheet" />
+      <link href="static/css/header.css" rel="stylesheet" />
+      <script src="static/js/bootstrap.bundle.min.js"></script>
+      <script type="module" src="https://pyscript.net/releases/2024.11.1/core.js"></script>
+      <style>
+         pre { padding: .5em; }
+         table.dataframe {
+             margin: .5em;
+             padding: .25em;
+         }
+         table.dataframe th {
+           border: 1px solid;
+           text-align: center;
+         }
+         table.dataframe tbody {
+            background-color: white;
+         } 
+      </style>
+    </head>
+   <body>
+    <div class="editor-navbar">
+        <label id="today"></label>
+        <h1>BIBFRAME Interoperability Validation Tool</h1>
+        <label id="shacl_size" class="pull-right"></label>
+    </div>
+
+   <script type="py" src="./main.py" config="./pyconfig.toml"></script>
+   </body>
+</html>

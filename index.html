@@ -2,23 +2,11 @@
 <html>
     <head>
       <title>SHACL/DCTAP BIBFRAME Validation Application</title>
-      <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+      <link rel="stylesheet" href="https://pyscript.net/releases/2024.11.1/core.css" />
       <link href="static/css/main.css" rel="stylesheet" />
       <link href="static/css/header.css" rel="stylesheet" />
       <script src="static/js/bootstrap.bundle.min.js"></script>
-      <script defer src="https://pyscript.net/latest/pyscript.js"></script>
-      <py-config type="toml">
-        packages = ["lxml", "numpy", "pytest", "pandas", './static/wheels/pyshacl-0.26.0-py3-none-any.whl', './static/wheels/rdflib-7.0.0-py3-none-any.whl']
-
-        [[fetch]]
-        from = "src/bf_demo_validation_tool"
-        files = ["data.py", "validation.py", "dctap.py"]
-
-        [[fetch]]
-        from = "tests"
-        files = ["test_validation.py"]
-
-      </py-config>
+      <script type="module" src="https://pyscript.net/releases/2024.11.1/core.js"></script>
       <style>
          pre { padding: .5em; }
          table.dataframe {
@@ -33,81 +21,10 @@
             background-color: white;
          } 
       </style>
+
     </head>
 
   <body>
-    <py-script>
-      import asyncio
-      import json
-      import sys
-      import datetime as dt
-      from traceback import format_exc
-    
-      import js
-      from pyodide.http import open_url
-
-      import pyshacl
-      from rdflib import Graph, Namespace, Literal
-
-      shacl_urls = []
-      
-
-      import validation
-      import dctap
-      from data import SHACL, init_shacl_graph, build_incoming_graph
-
-      shacl_graph = init_shacl_graph(shacl_urls)
-    
-      Element('today').write(dt.date.today().strftime('%A %B %d, %Y'))
-
-      shacl_summary = Element("shacl_summary")
-    
-      validation.summarize(summary_element=shacl_summary, graph=shacl_graph)
-
-      rdf_url = Element("rdf-url")
-      upload_control = Element("upload-rdf")
-      validation_result = Element("validation-result")
-      incoming_graphs = []
-
-      dctap_file = Element("upload-dctap")
-      dctap_table = Element("dctap-table")
-
-      sh = Namespace("http://www.w3.org/ns/shacl#")
-      
-      async def validate_rdf(*args, **kwargs):
-          graph, source_rdf_names = await build_incoming_graph(upload_control, 
-                                                               rdf_url)
-          incoming_graphs.append(graph)
-
-          await validation.validate(graph=graph,
-                                    shacl=shacl_graph,
-                                    source_rdf=source_rdf_names,
-                                    results_element=validation_result)
-
-      
-      async def run_tests(*args, **kwargs):
-          from test_validation import ValidationUnitTests
-          validation_display = Element("test-results")
-          validation_test = ValidationUnitTests()
-          try:
-              validation_test.test_serialize_graph()
-              msg = "All Tests Passed"
-          except AssertionError as err:
-              msg = format_exc()
-          validation_display.element.innerHTML = msg
-
-
-      async def load_dctap(*args, **kwargs):
-          global shacl_graph
-          use_existing_shacl_ckbox = Element("use-existing-shacl")
-          if use_existing_shacl_ckbox.element.checked:
-              dctap_graph = shacl_graph
-          else:
-              dctap_graph = init_shacl_graph([])
-          shacl_graph = await dctap.handler(dctap_file, dctap_table, dctap_graph)
-          validation.summarize(summary_element=shacl_summary, graph=shacl_graph)
-          
-    </py-script>
     <div class="editor-navbar">
       <label id="today"></label>
       <h1>BIBFRAME Interoperability Validation Tool</h1>
@@ -144,13 +61,6 @@
                 aria-selected="false"
                 aria-controls="shacl-tab"
           >DCTAP</button>
-      </li>
-      <li class="nav-item">
-        <button class="nav-link" 
-           data-bs-toggle="tab" 
-           data-bs-target="#python-repl"
-           type="button"
-           role="tab">REPL</button>
       </li>
       <li class="nav-item">
         <div class="dropdown">
@@ -224,7 +134,7 @@
             <div class="col-4">
               <input type="checkbox" id="use-existing-shacl"></input>
               <label for="use-existing-shacl">Add to existing SHACL graph</label>
-              <button id="load-dctap-btn" class="btn-primary" py-click="asyncio.ensure_future(load_dctap())">Load DCTAP</button> 
+              <button id="load-dctap-btn" class="btn-primary" py-click="load_dctap">Load DCTAP</button> 
             </div>
           </div>
           <div id="dctap-error" class="alert alert-danger alert-dismissible fade show d-none">
@@ -234,39 +144,6 @@
           </div>
           <div id="dctap-table"></div>
         </div>
-      </div>
-
-      <div id="python-repl" class="tab-pane fade">
-        <h2>Python REPL</h2>
-        <p>
-          Use the python REPL (Read-Eval-Print-Loop) to investigate the incoming RDF,
-          the current SHACL graph, or even dynamic add rules and iteratively evaluate
-          the sample.
-        </p>
-        <pre>
-    # Import dependencies
-    import rdflib
-    import pyshacl
-    
-    from data import BF, SHACL
-
-    # Add a NodeShape URL to the list of SHACL URLs 
-    shacl_urls.append("{url}")
-
-    # Regenerate the SHACL Validation Graph
-    shacl_graph = init_shacl_graph(shacl_urls)
-
-    # Display SHACL Summarization
-    validation.summarize(summary_element=shacl_summary, graph=shacl_graph)
-    
-        </pre>
-        <div class="row">
-          <div class="col">
-            <py-repl id="my-repl" auto-generate="true" std-out="output" std-err="err-div"> </py-repl>
-            <div id="output" class="p-4"></div>
-          </div>
-        </div>
-        <div id="err-div" class="bg-red-700 text-white text-center border-t-4 border-green-500 fixed inset-x-0 bottom-0 p-4 hidden"></div>
       </div>
     </div>
 
@@ -323,6 +200,7 @@
           </div>
         </div>
       </div>
-    </div>    
+    </div> 
+    <script type="py" src="./main.py" config="./pyconfig.toml"></script>
   </body>
 </html>

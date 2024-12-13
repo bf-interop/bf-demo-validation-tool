@@ -147,8 +147,8 @@ async def handler(file_input, dctap_element, shacl_graph: rdflib.Graph) -> rdfli
     dctap_error = js.document.getElementById("dctap-error")
     dctap_error_body = js.document.getElementById("dctap-error-body")
 
-    if file_input.element.files.length > 0:
-        dctap_file = file_input.element.files.item(0)
+    if file_input.files.length > 0:
+        dctap_file = file_input.files.item(0)
         dctap_text = await dctap_file.text()
         try:
             dctap_df = pd.read_csv(io.StringIO(dctap_text), sep="\t")
