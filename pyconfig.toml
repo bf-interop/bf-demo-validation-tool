@@ -1,0 +1,7 @@
+packages = ["lxml", "numpy", "pytest", "pandas", "packaging", "./static/wheels/isodate-0.6.1-py2.py3-none-any.whl", './static/wheels/pyshacl-0.26.0-py3-none-any.whl', './static/wheels/rdflib-7.0.0-py3-none-any.whl']
+
+[files]
+"./src/bf_demo_validation_tool/data.py" = "./data.py"
+"./src/bf_demo_validation_tool/validation.py" = "./validation.py"
+"./src/bf_demo_validation_tool/dctap.py" = "./dctap.py"
+#"./tests/test_validation.py" = /test_validation.py"
