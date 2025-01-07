@@ -52,11 +52,11 @@ async def build_incoming_graph(file_input, rdf_urls: str) -> rdflib.Graph:
     _bind_namespaces(incoming_graph)
     if file_input.files.length > 0:
         rdf_file_names = file_input.value
-        rdf_file = file_input.element.files.item(0)
+        rdf_file = file_input.files.item(0)
         rdf_file_text = await rdf_file.text()
         rdf_type = rdflib.util.guess_format(file_input.value)
         incoming_graph.parse(data=rdf_file_text, format=rdf_type)
-        file_input.clear()
+        file_input.value = ""
     elif len(rdf_urls.value) > 0:
         rdf_file_names = rdf_urls.value
         _build_from_urls(rdf_urls.value, incoming_graph)
