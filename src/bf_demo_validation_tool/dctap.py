@@ -94,9 +94,9 @@ def _add_property(row: dict, graph: rdflib.Graph):
                 severity_level = SHACL.Info
 
         graph.add((property_bnode, SHACL.severity, severity_level))
-    if row["mandatory"] is True:
+    if row["mandatory"].startswith("true"):
         graph.add((property_bnode, SHACL.minCount, rdflib.Literal(1)))
-    if row["repeatable"] is False:
+    if row["repeatable"].startswith("false"):
         graph.add((property_bnode, SHACL.maxCount, rdflib.Literal(1)))
     value_shape = row.get("valueShape")
     if isinstance(value_shape, str) and len(value_shape.strip()) > 0:
