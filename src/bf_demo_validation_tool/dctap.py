@@ -94,6 +94,7 @@ def _add_property(row: dict, graph: rdflib.Graph):
                 severity_level = SHACL.Info
 
         graph.add((property_bnode, SHACL.severity, severity_level))
+    js.console.log(f"Mandatory type {type(row['mandatory'])}")
     if row["mandatory"].startswith("true"):
         graph.add((property_bnode, SHACL.minCount, rdflib.Literal(1)))
     if row["repeatable"].startswith("false"):
@@ -155,7 +156,11 @@ async def handler(file_input, dctap_element, shacl_graph: rdflib.Graph) -> rdfli
         dctap_file = file_input.files.item(0)
         dctap_text = await dctap_file.text()
         try:
-            dctap_df = pd.read_csv(io.StringIO(dctap_text), sep="\t")
+            dctap_df = pd.read_csv(
+                io.StringIO(dctap_text),
+                dtype={"mandatory": str, "repeatable": str},
+                sep="\t",
+            )
             dctap_df = dctap_df.replace({np.nan: None})
         except Exception as e:
             dctap_error.classList.remove("d-none")
