@@ -83,7 +83,7 @@ def _add_property(row: dict, graph: rdflib.Graph):
     path_object = _prop_id_to_url(row["propertyID"])
     graph.add((property_bnode, SHACL.path, path_object))
     if "severity" in row:
-        match row["severity"]:
+        match row["severity"].strip():
             case "Violation":
                 severity_level = SHACL.Violation
 
