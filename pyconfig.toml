@@ -1,4 +1,4 @@
-packages = ["lxml", "numpy", "pytest", "pandas", "packaging", "./static/wheels/isodate-0.6.1-py2.py3-none-any.whl", './static/wheels/pyshacl-0.26.0-py3-none-any.whl', './static/wheels/rdflib-7.0.0-py3-none-any.whl']
+packages = ["lxml", "numpy", "pytest", "pandas", "packaging", "./static/wheels/isodate-0.7.2-py3-none-any.whl", './static/wheels/pyshacl-0.31.0-py3-none-any.whl', './static/wheels/rdflib-7.6.0-py3-none-any.whl', './static/wheels/dctap2shacl-0.2.0-py3-none-any.whl']
 
 [files]
 "./src/bf_demo_validation_tool/data.py" = "./data.py"
