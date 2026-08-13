@@ -26,7 +26,10 @@ async def handler(file_input, dctap_element, shacl_graph: rdflib.Graph) -> rdfli
             transformer = DCTap2SHACLTransformer()
             transformer.run(tmp_path)
             os.unlink(tmp_path)
-            shacl_graph = transformer.graph
+            if shacl_graph:
+                shacl_graph = shacl_graph + transformer.graph
+            else:
+                shacl_graph = transformer.graph
         except Exception as e:
             dctap_error.classList.remove("d-none")
             dctap_error_body.innerHTML = sys.exc_info()
